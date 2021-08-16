@@ -1,25 +1,25 @@
-import logo from './logo.svg';
 import './App.css';
+import {BrowserRouter, Route} from "react-router-dom";
+import {InitDemo} from "./demo/初始demo";
+import {DrawLineDemo} from "./demo/画线demo";
+import {Home} from "./demo/Home";
+import {FontDemo} from "./demo/文字demo";
+import {TDDemo} from "./demo/3Ddemo";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <div className="App">
+            <BrowserRouter>
+                <Home/>
+                <Route exact path="/"/>
+                <Route path="/DrawLineDemo" component={DrawLineDemo}/>
+                <Route path="/InitDemo" component={InitDemo}/>
+                <Route path="/FontDemo" component={FontDemo}/>
+                <Route path="/3DDemo" component={TDDemo}/>
+            </BrowserRouter>
+            <div className='showDemos'/>
+        </div>
+    );
 }
 
 export default App;
