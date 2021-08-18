@@ -2,9 +2,10 @@ import * as THREE from "three";
 import {renderHelper} from "../renderHelper";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {useEffect} from "react";
+import Stats from "three/examples/jsm/libs/stats.module";
 
 export const TDEarth = () => {
-    let scene, camera, renderer, earthMesh, cloudsMesh, light, controls
+    let scene, camera, renderer, earthMesh, cloudsMesh, light, controls, stats
 
     // document.addEventListener('DOMContentLoaded', function () {
     //     threeStart();
@@ -69,10 +70,12 @@ export const TDEarth = () => {
     }
 
     // 帧蘋
-    // function initStats() {
-    //     stats = new Stats();
-    //     renderHelper(stats.dom)
-    // }
+    function initStats() {
+        stats = new Stats();
+        const container = document.querySelector('.showDemos')
+        if (!container) return
+        container.appendChild(stats.dom)
+    }
 
     // 光源
     function initLight() {
@@ -98,7 +101,7 @@ export const TDEarth = () => {
         initThree();
         initScene();
         initCamera();
-        // initStats();
+        initStats();
         initLight();
         initEarth();
         initClouds();
@@ -110,6 +113,7 @@ export const TDEarth = () => {
 
     function animate() {
         controls.update();
+        stats.update();
         // 地球自转
         earthMesh.rotation.y -= 0.002;
         // 漂浮的云层
