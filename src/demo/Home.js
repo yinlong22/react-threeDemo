@@ -10,6 +10,7 @@ export const Home = () => {
             <Link to='/3DGlb'>3D-glb</Link>
             <Link to='/3DTexture'>3D-texture</Link>
             <Link to='/TDAnimation'>3D-Animation</Link>
+            <Link to='/TDEarth'>3D-Earth</Link>
         </div>
     )
 }

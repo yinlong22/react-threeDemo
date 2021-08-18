@@ -7,6 +7,7 @@ import {FontDemo} from "./demo/文字demo";
 import {TDGlb} from "./demo/3DGlb";
 import {TDTexture} from "./demo/3DDTexture";
 import {TDAnimation} from "./demo/3DAnimat";
+import {TDEarth} from "./demo/3DEarth";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/3DGlb" component={TDGlb}/>
                 <Route path="/3DTexture" component={TDTexture}/>
                 <Route path="/TDAnimation" component={TDAnimation}/>
+                <Route path="/TDEarth" component={TDEarth}/>
             </BrowserRouter>
             <div className='showDemos'/>
         </div>
