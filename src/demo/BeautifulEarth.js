@@ -5,7 +5,7 @@ import {useEffect} from "react";
 import Stats from "three/examples/jsm/libs/stats.module";
 
 export const BeautifulEarth = () => {
-    let scene, camera, renderer, earthMesh, cloudsMesh, light, controls, stats, pointMesh
+    let scene, camera, renderer, earthMesh, cloudsMesh, light, controls, stats, pointMesh = null
 
     useEffect(() => {
         threeStart();
@@ -36,6 +36,36 @@ export const BeautifulEarth = () => {
         renderHelper(renderer.domElement)
         // Sets the clear color and opacity.
         renderer.setClearColor(0x000000, 1.0);
+    }
+
+    // 星空
+    function initStars() {
+        const positions = [];
+        const colors = [];
+        const geometry = new THREE.BufferGeometry();
+        for (let i = 0; i < 5000; i++) {
+            const vertex = new THREE.Vector3();
+            vertex.x = Math.random() * 2 - 1;
+            vertex.y = Math.random() * 2 - 1;
+            vertex.z = Math.random() * 2 - 1;
+            positions.push(vertex.x, vertex.y, vertex.z);
+            const color = new THREE.Color();
+            color.setHSL(Math.random() * 0.2 + 0.5, 0.55, Math.random() * 0.25 + 0.55);
+            colors.push(color.r, color.g, color.b);
+        }
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        const starsMaterial = new THREE.ParticleBasicMaterial({
+            size: 1,
+            transparent: true,
+            opacity: 1,
+            vertexColors: true, //true：且该几何体的colors属性有值，则该粒子会舍弃第一个属性--color，而应用该几何体的colors属性的颜色
+            blending: THREE.AdditiveBlending,
+            sizeAttenuation: true
+        });
+        const stars = new THREE.ParticleSystem(geometry, starsMaterial);
+        stars.scale.set(300, 300, 300);
+        scene.add(stars);
     }
 
     // 地球
@@ -100,27 +130,63 @@ export const BeautifulEarth = () => {
     }
 
     function createPointMesh() {
+        // 打点
         const material = new THREE.MeshBasicMaterial({
             map: new THREE.TextureLoader().load('/lensflare0_alpha.png'),
             transparent: true, //使用背景透明的png贴图，注意开启透明计算
             // side: THREE.DoubleSide, //双面可见
             depthWrite: false, //禁止写入深度缓冲区数据
         });
-        const planGeometry = new THREE.PlaneGeometry(1, 1);
+        const planGeometry = new THREE.PlaneGeometry(3, 3);
         pointMesh = new THREE.Mesh(planGeometry, material);
         const size = 200 * 0.08;//矩形平面Mesh的尺寸
         pointMesh.scale.set(size, size, size);//设置mesh大小
         //设置mesh位置
         const coord = Point(104.071833, 30.580517, 200 * 1.01)
-        pointMesh.position.set(coord.x, coord.y, coord.z);
+
+        // 字体
+        new THREE.FontLoader().load('/helvetiker_bold.typeface.json', function (font) {
+            const color = 0x006699;
+            const matLite = new THREE.MeshBasicMaterial({
+                color: color,
+                opacity: 0.4,
+                side: THREE.DoubleSide
+            });
+            const message = "chengdu";
+            const shapes = font.generateShapes(message, 8);
+            const geometry = new THREE.ShapeGeometry(shapes);
+            geometry.computeBoundingBox();
+            const text = new THREE.Mesh(geometry, matLite);
+            text.position.set(coord.x + 16, coord.y + 12, coord.z - 2);
+            text.rotateY(Math.PI)
+            scene.add(text);
+        });
+
+        // 圆锥
+        const aGeo = new THREE.ConeGeometry(8, 30, 30);
+        // 创建分段节点处类的材质
+        const aMater = new THREE.MeshPhongMaterial({
+            color: 0x4076fa,
+            transparent: true,
+            opacity: 0.9
+        })
+        const aMesh = new THREE.Mesh(aGeo, aMater);
+        const bMesh = aMesh.rotateX(Math.PI / 2)
+
+        const groupMesh = new THREE.Group()
+        groupMesh.add(pointMesh, bMesh);
+        groupMesh.position.set(coord.x, coord.y, coord.z);
         // mesh在球面上的法线方向(球心和球面坐标构成的方向向量)
         const coordVec3 = new THREE.Vector3(coord.x, coord.y, coord.z).normalize();
         // mesh默认在XOY平面上，法线方向沿着z轴new THREE.Vector3(0, 0, 1)
         const meshNormal = new THREE.Vector3(0, 0, 1);
         // 四元数属性.quaternion表示mesh的角度状态
         //.setFromUnitVectors();计算两个向量之间构成的四元数值
-        pointMesh.quaternion.setFromUnitVectors(meshNormal, coordVec3);
-        scene.add(pointMesh);
+        groupMesh.quaternion.setFromUnitVectors(meshNormal, coordVec3);
+
+        setTimeout(() => {
+            scene.add(groupMesh);
+        }, 1000)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -128,31 +194,40 @@ export const BeautifulEarth = () => {
         initThree();
         initScene();
         initCamera();
+        initStars()
         initStats();
         initLight();
         initEarth();
         initClouds();
-        setTimeout(() => {
-            createPointMesh()
-        }, 2000)
+        createPointMesh()
         // 载入控制器
         controls = new OrbitControls(camera, renderer.domElement);
-        renderer.clear();
         animate();
     }
 
     function animate() {
-        controls.update();
         stats.update();
         // 地球自转
-        // earthMesh.rotation.y -= 0.002;
+        // earthMesh.rotation.y -= 0.02;
+        // rStatus -= 0.05
+        // if (rStatus>=0){
+        //     const axis = new THREE.Vector3(1, 0, 0);
+        //     earthMesh.rotateOnAxis(axis, Math.PI / 20)
+        // }
+
 
         // 漂浮的云层
         cloudsMesh.rotation.y -= 0.005;
         cloudsMesh.rotation.z += 0.005;
 
+        renderer.clear();
         renderer.render(scene, camera);
-        requestAnimationFrame(animate);
+        requestAnimationFrame(() => {
+            if (controls) {
+                controls.update();
+                animate()
+            }
+        });
     }
 
     return <div/>
