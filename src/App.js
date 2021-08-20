@@ -9,7 +9,7 @@ import {TDTexture} from "./demo/3DDTexture";
 import {TDAnimation} from "./demo/3DAnimat";
 import {TDEarth} from "./demo/3DEarth";
 import {BeautifulEarth} from "./demo/BeautifulEarth";
-import {EarthScreen} from "./EarthScreen/EarthScreen";
+import {EarthScreen} from "./earthScreen/EarthScreen";
 
 function App() {
     return (

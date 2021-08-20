@@ -151,22 +151,10 @@ export const EarthScreen = () => {
                 const coord = Point(location.coord[0], location.coord[1], 200 * 1.01)
 
                 // 字体
-                new THREE.FontLoader().load('/helvetiker_bold.typeface.json', function (font) {
-                    const color = 0x006699;
-                    const matLite = new THREE.MeshBasicMaterial({
-                        color: color,
-                        opacity: 0.4,
-                        side: THREE.DoubleSide
-                    });
-                    const message = location.name
-                    const shapes = font.generateShapes(message, 8);
-                    const geometry = new THREE.ShapeGeometry(shapes);
-                    geometry.computeBoundingBox();
-                    const text = new THREE.Mesh(geometry, matLite);
-                    text.position.set(coord.x + 16, coord.y + 12, coord.z - 2);
-                    text.rotateY(Math.PI)
-                    scene.add(text);
-                });
+                const map = new THREE.TextureLoader().load('/img.png');
+                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({map: map, color: '#ffffff', opacity: 0.5}));
+                sprite.scale.set(32, 22, 1);
+                sprite.center.set(0.5, -0.5);
 
                 // 圆锥
                 const aGeo = new THREE.ConeGeometry(8, 30, 30);
@@ -179,7 +167,7 @@ export const EarthScreen = () => {
 
                 const aMesh = new THREE.Mesh(aGeo, aMater).rotateX(Math.PI / 2);
                 const groupMesh = new THREE.Group()
-                groupMesh.add(pointMesh, aMesh);
+                groupMesh.add(pointMesh, aMesh, sprite);
                 groupMesh.position.set(coord.x, coord.y, coord.z);
                 // mesh在球面上的法线方向(球心和球面坐标构成的方向向量)
                 const coordVec3 = new THREE.Vector3(coord.x, coord.y, coord.z).normalize();
