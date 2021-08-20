@@ -12,6 +12,7 @@ export const Home = () => {
             <Link to='/TDAnimation'>3D-Animation</Link>
             <Link to='/TDEarth'>3D-Earth</Link>
             <Link to='/BeautifulEarth'>3D-BeautifulEarth</Link>
+            <Link to='/EarthScreen'>3D-EarthScreen</Link>
         </div>
     )
 }

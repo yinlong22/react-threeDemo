@@ -9,6 +9,7 @@ import {TDTexture} from "./demo/3DDTexture";
 import {TDAnimation} from "./demo/3DAnimat";
 import {TDEarth} from "./demo/3DEarth";
 import {BeautifulEarth} from "./demo/BeautifulEarth";
+import {EarthScreen} from "./EarthScreen/EarthScreen";
 
 function App() {
     return (
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/TDAnimation" component={TDAnimation}/>
                 <Route path="/TDEarth" component={TDEarth}/>
                 <Route path="/BeautifulEarth" component={BeautifulEarth}/>
+                <Route path="/EarthScreen" component={EarthScreen}/>
             </BrowserRouter>
             <div className='showDemos'/>
         </div>
