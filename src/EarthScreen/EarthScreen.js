@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import {renderHelper} from "../renderHelper";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {useEffect} from "react";
 import Stats from "three/examples/jsm/libs/stats.module";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 export const EarthScreen = () => {
-    let scene, camera, renderer, earthMesh, light, controls, stats, pointMesh = null
+    let scene, camera, renderer, earthMesh, light, controls, stats, pointMesh, selectObject = null
     const LOCATIONS = [{
         name: 'namibia',
         coord: [-19.2, 14.11666667], // 19° 12' S, 13° 67' E
@@ -68,9 +68,7 @@ export const EarthScreen = () => {
 
     function initCamera() {
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
-        camera.position.x = -500;
-        camera.position.y = 500;
-        camera.position.z = -500;
+        camera.position.set(-500, 500, -500)
     }
 
     // 渲染器
@@ -121,6 +119,40 @@ export const EarthScreen = () => {
         // 平行光 位置不同，方向光作用于物体的面也不同，看到的物体各个面的颜色也不一样
         // light = new THREE.DirectionalLight(0xffffbb, 1);
         // light.position.set(-1, 1, 1);
+    }
+
+    //点击
+    function onPointClick(event) {
+        event.preventDefault();
+        if (selectObject) {
+            selectObject.material.color.set("#69f");
+            selectObject = null;
+        }
+        const mouse = new THREE.Vector2();
+        const raycaster = new THREE.Raycaster();
+        //计算在图形中位置 鼠标   x  -1到1之间
+        mouse.x = (event.clientX / document.querySelector('.showDemos').clientWidth) * 2 - 1;
+        mouse.y = -(event.clientY / document.querySelector('.showDemos').clientHeight) * 2 + 1;
+        //从新 从相机到鼠标位置射线 并且获得接触的物体。
+        if (!camera) return
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        if (intersects.length > 0) {
+            const res = intersects.filter(function (res) {
+                return res && res.object
+            })[0];
+            if (res && res.object) {
+                console.log(res)
+                console.log(earthMesh,'===');
+                if (res.object.id === 12) return;
+                console.log(res.object.po);
+                // const coordVec3 = new THREE.Vector3(104.071833, 30.580517,200).normalize();
+                // const meshNormal = new THREE.Vector3(0, 0, 1);
+                // earthMesh.quaternion.setFromUnitVectors(meshNormal, coordVec3);
+                selectObject = res.object;
+                selectObject.material.color.set("#ffc466")
+            }
+        }
     }
 
     /**
@@ -195,6 +227,7 @@ export const EarthScreen = () => {
         createPointMesh()
         // 载入控制器
         controls = new OrbitControls(camera, renderer.domElement);
+        window.addEventListener("click", onPointClick, false)
         animate();
     }
 
