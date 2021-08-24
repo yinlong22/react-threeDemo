@@ -46,7 +46,7 @@ export const TDEarth = () => {
         // 实例化一个半径为 200 的球体
         const earthGeo = new THREE.SphereGeometry(200, 100, 100);
         const earthMater = new THREE.MeshPhongMaterial({
-            map: new THREE.TextureLoader().load('/earth.jpg')
+            map: new THREE.TextureLoader().load('/earthNormal.jpg')
         });
         earthMesh = new THREE.Mesh(earthGeo, earthMater);
         scene.add(earthMesh);
