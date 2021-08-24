@@ -6,8 +6,7 @@ import {LOCATIONS} from "./city";
 import {TWEEN} from "three/examples/jsm/libs/tween.module.min";
 
 export const EarthScreen = () => {
-    let scene, camera, renderer, earthMesh, light, controls, stats, allLight, cityLast
-        , isTween, tween = null
+    let scene, camera, renderer, earthMesh, light, controls, stats, tween = null
     const textureLoader = new THREE.TextureLoader();
     const locationGroup = new THREE.Group();
     const mouse = new THREE.Vector2();
@@ -50,25 +49,6 @@ export const EarthScreen = () => {
         container.appendChild(stats.dom)
     }
 
-    // 光源
-    function initLight() {
-        // 位于场景正上方的光源，颜色从天空颜色渐变为地面颜色。
-        // light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
-
-        // 环境光
-        allLight = new THREE.AmbientLight(0xFFFFFF);
-        allLight.position.set(100, 100, 200);
-
-        // 平行光 位置不同，方向光作用于物体的面也不同，看到的物体各个面的颜色也不一样
-        light = new THREE.DirectionalLight(0xffffbb, 1);
-        light.position.set(-11, 3, 1);
-
-        const sun = new THREE.SpotLight(0x393939, 2.5);
-        sun.position.set(-15, 10, 21);
-
-        scene.add(allLight, light, sun);
-    }
-
     // 地球
     function initEarth() {
         // 实例化一个半径为 200 的球体
@@ -85,6 +65,25 @@ export const EarthScreen = () => {
         scene.add(earthMesh);
     }
 
+    // 光源
+    function initLight() {
+        // 位于场景正上方的光源，颜色从天空颜色渐变为地面颜色。
+        // light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+
+        // 环境光
+        const allLight = new THREE.AmbientLight(0xFFFFFF);
+        allLight.position.set(100, 100, 200);
+
+        // 平行光 位置不同，方向光作用于物体的面也不同，看到的物体各个面的颜色也不一样
+        light = new THREE.DirectionalLight(0xffffbb, 1);
+        light.position.set(-11, 3, 1);
+
+        const sun = new THREE.SpotLight(0x393939, 2.5);
+        sun.position.set(-15, 10, 21);
+
+        scene.add(allLight, light, sun);
+    }
+
     /**
      *lng:经度
      *lat:维度
@@ -97,67 +96,37 @@ export const EarthScreen = () => {
     }
 
     function createPointMesh() {
+        // 打点
         LOCATIONS.forEach(location => {
-                const material = new THREE.MeshBasicMaterial({
-                    map: textureLoader.load('/location.png'),
-                    transparent: true, //背景透明的png贴图，注意开启透明计算
-                    side: THREE.DoubleSide, //双面可见
-                    fog: true,
-                    depthWrite: false, //禁止写入深度缓冲区数据
-                });
-                const sprite = new THREE.Sprite(material)
-                const pos = Point(location.coord[1], location.coord[0], 201);
-                sprite.position.set(pos.x, pos.y, pos.z)
-                sprite.name = location.name;
-                sprite.coord = {lg: location.coord[1], lt: location.coord[0]};
-                sprite.scale.set(20, 20, 1)
+                //设置坐标
+                const sprite = new THREE.Sprite(new THREE.SpriteMaterial(
+                    {
+                        map: textureLoader.load('/location.png'),
+                        depthWrite: false, //禁止写入深度缓冲区数据
+                    }));
+                const pos = Point(location.coord[1], location.coord[0], 200 * 1.05)
+                sprite.coord = {lg: location.coord[1], lt: location.coord[0]}
+                sprite.position.set(pos.x, pos.y, pos.z);
+                sprite.scale.set(20, 20, 1);
+                sprite.name = location.name
+                //城市名
+                const spriteText = new THREE.Sprite(new THREE.SpriteMaterial(
+                    {
+                        color: 0x000000,
+                        map: textureLoader.load(`/i_${(location.name).toLowerCase()}.png`),
+                        depthWrite: false, //禁止写入深度缓冲区数据
+                    }));
+                spriteText.position.set(pos.x, pos.y, pos.z);
+                spriteText.scale.set(50, 50, 1.5);
                 const coordVec3 = new THREE.Vector3(pos.x, pos.y, pos.z).normalize();
                 const meshNormal = new THREE.Vector3(0, 0, 1);
                 sprite.quaternion.setFromUnitVectors(meshNormal, coordVec3);
-                locationGroup.add(sprite)
+                locationGroup.add(sprite, spriteText);
                 scene.add(locationGroup);
-                // 字体
-                // const map = new THREE.TextureLoader().load('/img.png');
-                // sprite = new THREE.Sprite(new THREE.SpriteMaterial({map: map, color: '#ffffff', opacity: 0.5}));
-                // sprite.scale.set(32, 22, 1);
-                // sprite.center.set(0.5, -0.5);
-
             }
         )
     }
 
-    //点击
-    // function onPointClick(event) {
-    //     event.preventDefault();
-    //     if (selectObject) {
-    //         selectObject.material.color.set("#69f");
-    //         selectObject = null;
-    //     }
-    //     const mouse = new THREE.Vector2();
-    //     const raycaster = new THREE.Raycaster();
-    //     //计算在图形中位置 鼠标   x  -1到1之间
-    //     mouse.x = (event.clientX / document.querySelector('.showDemos').clientWidth) * 2 - 1;
-    //     mouse.y = -(event.clientY / document.querySelector('.showDemos').clientHeight) * 2 + 1;
-    //     //从新 从相机到鼠标位置射线 并且获得接触的物体。
-    //     if (!camera) return
-    //     raycaster.setFromCamera(mouse, camera);
-    // const intersects = raycaster.intersectObjects(scene.children, true);
-    // if (intersects.length > 0) {
-    //     const res = intersects.filter(function (res) {
-    //         return res && res.object
-    //     })[0];
-    //     if (res && res.object) {
-    //         console.log(res)
-    //         console.log(earthMesh, '===');
-    //         if (res.object.id === 12) return;
-    //         const coordVec3 = new THREE.Vector3(104.071833, 30.580517,200 * 1.01).normalize();
-    //         const meshNormal = new THREE.Vector3(0, 0, 1);
-    //         earthMesh.quaternion.setFromUnitVectors(meshNormal, coordVec3);
-    //         selectObject = res.object;
-    //         selectObject.material.color.set("#ffc466")
-    //     }
-    // }
-    // }
     function rotate2Center(coord) {
         const lg = THREE.Math.degToRad(coord.lg),
             lt = THREE.Math.degToRad(coord.lt);
@@ -165,7 +134,6 @@ export const EarthScreen = () => {
     }
 
     function rotateEarth(intervalX, intervalY) {
-        isTween = true;
         if (tween) tween.stop();
         tween = new TWEEN.Tween({
             rotateY: earthMesh.rotation.y,
@@ -179,13 +147,13 @@ export const EarthScreen = () => {
             }, 1000);
         tween.easing(TWEEN.Easing.Sinusoidal.InOut);
         const onUpdate = function () {
-            earthMesh.rotation.y = this.rotateY;
-            earthMesh.rotation.x = this.rotateX;
-            locationGroup.rotation.y = this.rotateLoc;
-            locationGroup.rotation.x = this.rotateX;
+            // console.log(this)
+            earthMesh.rotation.y = this._object.rotateY;
+            earthMesh.rotation.x = this._object.rotateX;
+            locationGroup.rotation.y = this._object.rotateLoc;
+            locationGroup.rotation.x = this._object.rotateX;
         }
         const onComplete = function () {
-            isTween = false;
         }
         tween.onUpdate(onUpdate);
         tween.onComplete(onComplete);
@@ -200,38 +168,35 @@ export const EarthScreen = () => {
         raycaster.setFromCamera(mouse, camera);
         // 获取raycaster直线和所有模型相交的数组集合
         const intersects = raycaster.intersectObjects(locationGroup.children, true);
-        console.log(intersects, '===');
-        // if (intersects.length > 0) {
-        //     if (cityLast) cityLast.scale.set(1, 1, 1);
-        //     // 只取第一个相交物体
-        //     const city = intersects[0].object;
-        //     cityLast = city;
-        //     // 放大
-        //     city.scale.set(1.5, 1.5, 1.5);
-        //
-        //     // 显示城市名
-        //     // const cityName = city.name;
-        //     // const cityText = document.getElementById("cityName");
-        //     // cityText.className = "";
-        //     // setTimeout(function () {
-        //     //     cityText.innerText = cityName;
-        //     //     cityText.className = "showed";
-        //     // }, 500)
-        //
-        //     // 旋转到中心
-        //     console.log(city.coord);
-        //     const rotateRad = rotate2Center(city.coord);
-        //     let finalY = -rotateRad.y;
-        //     while (earthMesh.rotation.y > 0 && finalY + Math.PI * 2 < earthMesh.rotation.y) finalY += Math.PI * 2;
-        //     while (earthMesh.rotation.y < 0 && finalY - Math.PI * 2 > earthMesh.rotation.y) finalY -= Math.PI * 2;
-        //     if (Math.abs(finalY - earthMesh.rotation.y) > Math.PI) {
-        //         if (finalY > earthMesh.rotation.y) finalY -= Math.PI * 2;
-        //         else finalY += Math.PI * 2;
-        //     }
-        //     console.log(rotateRad)
-        //     // rotateRad.x-earthGroup.rotation.x, rotateRad.y-earthGroup.rotation.y
-        //     rotateEarth(rotateRad.x - earthMesh.rotation.x, finalY - earthMesh.rotation.y);
-        // }
+        if (intersects.length > 0 && intersects[0].object.name) {
+            // 只取第一个相交物体
+            const city = intersects[0].object;
+            // 放大
+            locationGroup.children.map(el => {
+                if (el.name) el.scale.set(20, 20, 1)
+            })
+            city.scale.set(30, 30, 1);
+
+            // 显示城市名
+            // const cityName = city.name;
+            // const cityText = document.getElementById("cityName");
+            // cityText.className = "";
+            // setTimeout(function () {
+            //     cityText.innerText = cityName;
+            //     cityText.className = "showed";
+            // }, 500)
+
+            // 旋转到中心
+            const rotateRad = rotate2Center(city.coord);
+            let finalY = -rotateRad.y;
+            while (earthMesh.rotation.y > 0 && finalY + Math.PI * 2 < earthMesh.rotation.y) finalY += Math.PI * 2;
+            while (earthMesh.rotation.y < 0 && finalY - Math.PI * 2 > earthMesh.rotation.y) finalY -= Math.PI * 2;
+            if (Math.abs(finalY - earthMesh.rotation.y) > Math.PI) {
+                if (finalY > earthMesh.rotation.y) finalY -= Math.PI * 2;
+                else finalY += Math.PI * 2;
+            }
+            rotateEarth(rotateRad.x - earthMesh.rotation.x, finalY - earthMesh.rotation.y);
+        }
     }
 
     function threeStart() {
@@ -250,10 +215,10 @@ export const EarthScreen = () => {
 
     function animate() {
         stats.update();
-        TWEEN.update();
         renderer.clear();
         renderer.render(scene, camera);
         requestAnimationFrame(() => {
+            TWEEN.update();
             if (controls) {
                 controls.update();
                 animate()

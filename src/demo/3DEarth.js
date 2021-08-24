@@ -7,12 +7,7 @@ import Stats from "three/examples/jsm/libs/stats.module";
 export const TDEarth = () => {
     let scene, camera, renderer, earthMesh, cloudsMesh, light, controls, stats
 
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     threeStart();
-    // })
-    useEffect(() => {
-        threeStart();
-    }, [threeStart])
+    threeStart();
 
     function initScene() {
         scene = new THREE.Scene();
@@ -96,7 +91,6 @@ export const TDEarth = () => {
         // scene.add(light);
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     function threeStart() {
         initThree();
         initScene();
