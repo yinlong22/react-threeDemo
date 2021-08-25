@@ -120,9 +120,6 @@ export const EarthScreen = () => {
                     }));
                 spriteText.position.set(pos.x, pos.y, pos.z);
                 spriteText.scale.set(50, 50, 1.5);
-                const coordVec3 = new THREE.Vector3(pos.x, pos.y, pos.z).normalize();
-                const meshNormal = new THREE.Vector3(0, 0, 1);
-                sprite.quaternion.setFromUnitVectors(meshNormal, coordVec3);
                 locationGroup.add(sprite, spriteText);
                 scene.add(locationGroup);
             }
