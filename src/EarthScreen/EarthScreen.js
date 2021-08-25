@@ -4,9 +4,11 @@ import Stats from "three/examples/jsm/libs/stats.module";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {LOCATIONS} from "./city";
 import {TWEEN} from "three/examples/jsm/libs/tween.module.min";
+import {degToRad} from "three/src/math/MathUtils";
 
 export const EarthScreen = () => {
-    let scene, camera, renderer, earthMesh, light, controls, stats, tween = null
+    let scene, camera, renderer, earthMesh, light, controls, stats,
+        tween, city = null
     const textureLoader = new THREE.TextureLoader();
     const locationGroup = new THREE.Group();
     const mouse = new THREE.Vector2();
@@ -128,9 +130,7 @@ export const EarthScreen = () => {
     }
 
     function rotate2Center(coord) {
-        const lg = THREE.Math.degToRad(coord.lg),
-            lt = THREE.Math.degToRad(coord.lt);
-        return {x: lt, y: lg};
+        return {x: degToRad(coord.lt), y: degToRad(coord.lg)};
     }
 
     function rotateEarth(intervalX, intervalY) {
@@ -146,8 +146,8 @@ export const EarthScreen = () => {
                 rotateLoc: locationGroup.rotation.y + intervalY
             }, 1000);
         tween.easing(TWEEN.Easing.Sinusoidal.InOut);
+
         const onUpdate = function () {
-            // console.log(this)
             earthMesh.rotation.y = this._object.rotateY;
             earthMesh.rotation.x = this._object.rotateX;
             locationGroup.rotation.y = this._object.rotateLoc;
@@ -170,11 +170,9 @@ export const EarthScreen = () => {
         const intersects = raycaster.intersectObjects(locationGroup.children, true);
         if (intersects.length > 0 && intersects[0].object.name) {
             // 只取第一个相交物体
-            const city = intersects[0].object;
+            if (city) city.scale.set(20, 20, 1);
+            city = intersects[0].object;
             // 放大
-            locationGroup.children.map(el => {
-                if (el.name) el.scale.set(20, 20, 1)
-            })
             city.scale.set(30, 30, 1);
 
             // 显示城市名
@@ -188,15 +186,22 @@ export const EarthScreen = () => {
 
             // 旋转到中心
             const rotateRad = rotate2Center(city.coord);
-            let finalY = -rotateRad.y;
+            let finalY = rotateRad.y;
             while (earthMesh.rotation.y > 0 && finalY + Math.PI * 2 < earthMesh.rotation.y) finalY += Math.PI * 2;
             while (earthMesh.rotation.y < 0 && finalY - Math.PI * 2 > earthMesh.rotation.y) finalY -= Math.PI * 2;
             if (Math.abs(finalY - earthMesh.rotation.y) > Math.PI) {
                 if (finalY > earthMesh.rotation.y) finalY -= Math.PI * 2;
                 else finalY += Math.PI * 2;
             }
-            rotateEarth(rotateRad.x - earthMesh.rotation.x, finalY - earthMesh.rotation.y);
+            rotateEarth(rotateRad.x - earthMesh.rotation.x,
+                finalY - earthMesh.rotation.y);
         }
+    }
+
+    function startControl() {
+        document.addEventListener('mousedown', onPointClick);
+        // 载入控制器
+        controls = new OrbitControls(camera, renderer.domElement);
     }
 
     function threeStart() {
@@ -207,18 +212,16 @@ export const EarthScreen = () => {
         initLight();
         initEarth();
         createPointMesh()
-        // 载入控制器
-        controls = new OrbitControls(camera, renderer.domElement);
-        window.addEventListener("click", onPointClick, false)
+        startControl()
         animate();
     }
 
     function animate() {
         stats.update();
         renderer.clear();
+        TWEEN.update();
         renderer.render(scene, camera);
         requestAnimationFrame(() => {
-            TWEEN.update();
             if (controls) {
                 controls.update();
                 animate()
