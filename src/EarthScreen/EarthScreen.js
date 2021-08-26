@@ -5,6 +5,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {LOCATIONS} from "./city";
 import {TWEEN} from "three/examples/jsm/libs/tween.module.min";
 import {degToRad} from "three/src/math/MathUtils";
+import {useEffect} from "react";
 
 export const EarthScreen = () => {
     let scene, camera, renderer, earthMesh, light, controls, stats,
@@ -14,7 +15,9 @@ export const EarthScreen = () => {
     const mouse = new THREE.Vector2();
     const raycaster = new THREE.Raycaster()
 
-    threeStart();
+    useEffect(()=>{
+        threeStart();
+    },[])
 
     function initScene() {
         scene = new THREE.Scene();
@@ -23,8 +26,8 @@ export const EarthScreen = () => {
     }
 
     function initCamera() {
-        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
-        camera.position.set(-500, 500, -500)
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        camera.position.z = 500;
     }
 
     // 渲染器
@@ -63,6 +66,7 @@ export const EarthScreen = () => {
             bumpMap: textureLoader.load('/earth_bump.jpg')
         });
         earthMesh = new THREE.Mesh(earthGeo, earthMater);
+        earthMesh.rotation.y = -(Math.PI / 2).toFixed(2);
         earthMesh.name = "earth"
         scene.add(earthMesh);
     }
@@ -92,9 +96,13 @@ export const EarthScreen = () => {
      *radius:地球半径
      */
     function Point(lng, lat, radius) {
-        const theta = (90 + lng) * (Math.PI / 180)
-        const phi = (90 - lat) * (Math.PI / 180)
-        return (new THREE.Vector3()).setFromSpherical(new THREE.Spherical(radius, phi, theta))
+        const lg = THREE.Math.degToRad(lng),
+            lt = THREE.Math.degToRad(lat);
+        const y = radius * Math.sin(lt);
+        const temp = radius * Math.cos(lt);
+        const x = temp * Math.sin(lg);
+        const z = temp * Math.cos(lg);
+        return {x: x, y: y, z: z}
     }
 
     function createPointMesh() {
@@ -143,7 +151,6 @@ export const EarthScreen = () => {
                 rotateLoc: locationGroup.rotation.y + intervalY
             }, 1000);
         tween.easing(TWEEN.Easing.Sinusoidal.InOut);
-
         const onUpdate = function () {
             earthMesh.rotation.y = this._object.rotateY;
             earthMesh.rotation.x = this._object.rotateX;
@@ -159,6 +166,7 @@ export const EarthScreen = () => {
 
     function onPointClick(e) {
         e.preventDefault();
+        console.log(controls.rotation);
         // 鼠标点击位置的屏幕坐标转换成threejs中的标准坐标-1<x<1, -1<y<1
         mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -183,7 +191,7 @@ export const EarthScreen = () => {
 
             // 旋转到中心
             const rotateRad = rotate2Center(city.coord);
-            let finalY = rotateRad.y;
+            let finalY = -rotateRad.y;
             while (earthMesh.rotation.y > 0 && finalY + Math.PI * 2 < earthMesh.rotation.y) finalY += Math.PI * 2;
             while (earthMesh.rotation.y < 0 && finalY - Math.PI * 2 > earthMesh.rotation.y) finalY -= Math.PI * 2;
             if (Math.abs(finalY - earthMesh.rotation.y) > Math.PI) {
@@ -191,7 +199,7 @@ export const EarthScreen = () => {
                 else finalY += Math.PI * 2;
             }
             rotateEarth(rotateRad.x - earthMesh.rotation.x,
-                finalY - earthMesh.rotation.y);
+                finalY - earthMesh.rotation.y-(Math.PI / 2).toFixed(2));
         }
     }
 
@@ -216,9 +224,9 @@ export const EarthScreen = () => {
     function animate() {
         stats.update();
         renderer.clear();
-        TWEEN.update();
         renderer.render(scene, camera);
         requestAnimationFrame(() => {
+            TWEEN.update();
             if (controls) {
                 controls.update();
                 animate()
