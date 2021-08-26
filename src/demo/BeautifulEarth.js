@@ -132,14 +132,14 @@ export const BeautifulEarth = () => {
     function createPointMesh() {
         // 打点
         const material = new THREE.MeshBasicMaterial({
-            map: new THREE.TextureLoader().load('/lensflare0_alpha.png'),
+            map: new THREE.TextureLoader().load('/location.png'),
             transparent: true, //使用背景透明的png贴图，注意开启透明计算
             // side: THREE.DoubleSide, //双面可见
             depthWrite: false, //禁止写入深度缓冲区数据
         });
         const planGeometry = new THREE.PlaneGeometry(3, 3);
         pointMesh = new THREE.Mesh(planGeometry, material);
-        const size = 200 * 0.08;//矩形平面Mesh的尺寸
+        const size = 5;//矩形平面Mesh的尺寸
         pointMesh.scale.set(size, size, size);//设置mesh大小
         //设置mesh位置
         const coord = Point(104.071833, 30.580517, 200 * 1.01)
