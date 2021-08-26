@@ -21,5 +21,13 @@ export const LOCATIONS = [{
     {
         name: 'ANTARCTICA',
         coord: [-90,360]
+    },
+    {
+        name: 'GREENLAND',
+        coord: [75.930886,-40.253906]
+    },
+    {
+        name: 'NAMIBIA',
+        coord: [-22.57,17.086117]
     }
 ]
