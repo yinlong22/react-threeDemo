@@ -11,14 +11,15 @@ import './city.css'
 export const EarthScreen = () => {
     let scene, camera, renderer, earthMesh, light, controls, stats,
         tween, city = null
-    const textureLoader = new THREE.TextureLoader();
-    const locationGroup = new THREE.Group();
     const mouse = new THREE.Vector2();
+    const locationGroup = new THREE.Group();
     const raycaster = new THREE.Raycaster()
+    const textureLoader = new THREE.TextureLoader();
     const correctRotate = (Math.PI / 2).toFixed(2)
 
     useEffect(() => {
         threeStart();
+        rotateToCity('SHANGHAI')
     }, [])
 
     function initScene() {
@@ -178,29 +179,40 @@ export const EarthScreen = () => {
             // 只取第一个相交物体
             if (city) city.scale.set(20, 20, 1);
             city = intersects[0].object;
-            // 放大
-            city.scale.set(30, 30, 1);
-
-            // 显示城市名
-            const cityName = city.name;
-            const cityText = document.querySelector(".showCity");
-            setTimeout(function () {
-                cityText.innerText = cityName;
-            }, 500)
-
-            // 旋转到中心
-            const rotateRad = rotate2Center(city.coord);
-            let finalY = -rotateRad.y;
-            while (earthMesh.rotation.y > 0 && finalY + Math.PI * 2 < earthMesh.rotation.y) finalY += Math.PI * 2;
-            while (earthMesh.rotation.y < 0 && finalY - Math.PI * 2 > earthMesh.rotation.y) finalY -= Math.PI * 2;
-            if (Math.abs(finalY - earthMesh.rotation.y) > Math.PI) {
-                if (finalY > earthMesh.rotation.y) finalY -= Math.PI * 2;
-                else finalY += Math.PI * 2;
-            }
-            const needRotateX = rotateRad.x - earthMesh.rotation.x + controls.object.rotation.x
-            const needRotateY = finalY - earthMesh.rotation.y - correctRotate + controls.object.rotation.y
-            rotateEarth(needRotateX, needRotateY);
+            rotateToCenter(city)
         }
+    }
+
+    function rotateToCenter(city) {
+        // 放大
+        city.scale.set(30, 30, 1);
+
+        // 显示城市名
+        const cityName = city.name;
+        const cityText = document.querySelector(".showCity");
+        setTimeout(function () {
+            cityText.innerText = cityName;
+        }, 500)
+
+        // 旋转到中心
+        const rotateRad = rotate2Center(city.coord);
+        let finalY = -rotateRad.y;
+        while (earthMesh.rotation.y > 0 && finalY + Math.PI * 2 < earthMesh.rotation.y) finalY += Math.PI * 2;
+        while (earthMesh.rotation.y < 0 && finalY - Math.PI * 2 > earthMesh.rotation.y) finalY -= Math.PI * 2;
+        if (Math.abs(finalY - earthMesh.rotation.y) > Math.PI) {
+            if (finalY > earthMesh.rotation.y) finalY -= Math.PI * 2;
+            else finalY += Math.PI * 2;
+        }
+        const needRotateX = rotateRad.x - earthMesh.rotation.x + controls.object.rotation.x
+        const needRotateY = finalY - earthMesh.rotation.y - correctRotate + controls.object.rotation.y
+        rotateEarth(needRotateX, needRotateY);
+    }
+
+    function rotateToCity(cityName) {
+        city = locationGroup.children.find((location) => {
+            return location.name === cityName
+        })
+        rotateToCenter(city)
     }
 
     function startControl() {
