@@ -6,6 +6,7 @@ import {LOCATIONS} from "./city";
 import {TWEEN} from "three/examples/jsm/libs/tween.module.min";
 import {degToRad} from "three/src/math/MathUtils";
 import {useEffect} from "react";
+import './city.css'
 
 export const EarthScreen = () => {
     let scene, camera, renderer, earthMesh, light, controls, stats,
@@ -14,10 +15,11 @@ export const EarthScreen = () => {
     const locationGroup = new THREE.Group();
     const mouse = new THREE.Vector2();
     const raycaster = new THREE.Raycaster()
+    const correctRotate = (Math.PI / 2).toFixed(2)
 
-    useEffect(()=>{
+    useEffect(() => {
         threeStart();
-    },[])
+    }, [])
 
     function initScene() {
         scene = new THREE.Scene();
@@ -66,7 +68,7 @@ export const EarthScreen = () => {
             bumpMap: textureLoader.load('/earth_bump.jpg')
         });
         earthMesh = new THREE.Mesh(earthGeo, earthMater);
-        earthMesh.rotation.y = -(Math.PI / 2).toFixed(2);
+        earthMesh.rotation.y = -correctRotate;
         earthMesh.name = "earth"
         scene.add(earthMesh);
     }
@@ -166,7 +168,6 @@ export const EarthScreen = () => {
 
     function onPointClick(e) {
         e.preventDefault();
-        console.log(controls.rotation);
         // 鼠标点击位置的屏幕坐标转换成threejs中的标准坐标-1<x<1, -1<y<1
         mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -181,13 +182,11 @@ export const EarthScreen = () => {
             city.scale.set(30, 30, 1);
 
             // 显示城市名
-            // const cityName = city.name;
-            // const cityText = document.getElementById("cityName");
-            // cityText.className = "";
-            // setTimeout(function () {
-            //     cityText.innerText = cityName;
-            //     cityText.className = "showed";
-            // }, 500)
+            const cityName = city.name;
+            const cityText = document.querySelector(".showCity");
+            setTimeout(function () {
+                cityText.innerText = cityName;
+            }, 500)
 
             // 旋转到中心
             const rotateRad = rotate2Center(city.coord);
@@ -198,8 +197,9 @@ export const EarthScreen = () => {
                 if (finalY > earthMesh.rotation.y) finalY -= Math.PI * 2;
                 else finalY += Math.PI * 2;
             }
-            rotateEarth(rotateRad.x - earthMesh.rotation.x,
-                finalY - earthMesh.rotation.y-(Math.PI / 2).toFixed(2));
+            const needRotateX = rotateRad.x - earthMesh.rotation.x + controls.object.rotation.x
+            const needRotateY = finalY - earthMesh.rotation.y - correctRotate + controls.object.rotation.y
+            rotateEarth(needRotateX, needRotateY);
         }
     }
 
@@ -234,5 +234,5 @@ export const EarthScreen = () => {
         });
     }
 
-    return <div/>
+    return <div className='showCity'/>
 }
