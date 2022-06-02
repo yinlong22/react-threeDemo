@@ -13,6 +13,7 @@ export const Home = () => {
             <Link to='/TDEarth'>3D-Earth</Link>
             <Link to='/BeautifulEarth'>3D-BeautifulEarth</Link>
             <Link to='/EarthScreen'>3D-EarthScreen</Link>
+            <Link to='/3DGlbBig'>3DGlbBig</Link>
         </div>
     )
 }
