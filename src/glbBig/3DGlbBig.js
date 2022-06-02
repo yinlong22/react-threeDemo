@@ -17,34 +17,34 @@ export const TDGlbBig = () => {
 
     function initScene() {
         scene = new THREE.Scene();
-        scene.background = new THREE.Color( 0xa0a0a0 );
-        scene.fog = new THREE.Fog( 0xa0a0a0, 200, 1000 );
+        scene.background = new THREE.Color(0xaf1f1f1);
     }
 
     function initCamera() {
-        camera = new THREE.PerspectiveCamera(5, window.innerWidth / window.innerHeight, 1, 1000);
+        camera = new THREE.PerspectiveCamera(3, window.innerWidth / window.innerHeight, 1, 1000);
         camera.position.set(-10, 0, 23);
         scene.add(camera);
     }
 
     function initControls() {
         controls = new OrbitControls(camera, renderer.domElement);
-        controls.addEventListener('change', render);
         controls.minDistance = 10;
         controls.maxDistance = 50;
         controls.enablePan = false;
+        controls.autoRotate = true
+        controls.autoRotateSpeed = 1.0
+        controls.addEventListener('change', render);
     }
 
     function initLight() {
-        const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-        hemiLight.position.set( 0, 200, 0 );
-        scene.add( hemiLight );
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
+        hemiLight.position.set(0, 200, 0);
         const light = new THREE.PointLight(0xffffff, 1.5);
         const allLight = new THREE.AmbientLight(0xffffff, .2)
         allLight.position.set(100, 100, 200);
         const sun = new THREE.SpotLight(0x393939, 2.5);
         sun.position.set(-15, 10, 21);
-        scene.add(allLight, light, sun);
+        scene.add(allLight, light, sun, hemiLight);
     }
 
     function loadModel() {
@@ -63,17 +63,29 @@ export const TDGlbBig = () => {
         });
     }
 
-    function init() {
-        initRender()
-        initScene()
-        initCamera()
-        initControls()
-        initLight()
-        loadModel()
-        window.addEventListener('resize', onWindowResize);
+    function resizeRendererToDisplaySize(renderer) {
+        const canvas = renderer.domElement;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const canvasPixelWidth = canvas.width / window.devicePixelRatio;
+        const canvasPixelHeight = canvas.height / window.devicePixelRatio;
+
+        const needResize = canvasPixelWidth !== width || canvasPixelHeight !== height;
+        if (needResize) {
+            renderer.setSize(width, height, false);
+        }
+        return needResize;
     }
 
     function animate() {
+        controls.update();
+        render();
+        requestAnimationFrame(animate);
+        if (resizeRendererToDisplaySize(renderer)) {
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+        }
     }
 
     function onWindowResize() {
@@ -85,6 +97,16 @@ export const TDGlbBig = () => {
 
     function render() {
         renderer.render(scene, camera);
+    }
+
+    function init() {
+        initRender()
+        initScene()
+        initCamera()
+        initControls()
+        initLight()
+        loadModel()
+        window.addEventListener('resize', onWindowResize);
     }
 
     return (
