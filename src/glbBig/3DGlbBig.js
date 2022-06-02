@@ -17,12 +17,12 @@ export const TDGlbBig = () => {
 
     function initScene() {
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xaf1f1f1);
+        scene.background = new THREE.Color(0x1c1c1c);
     }
 
     function initCamera() {
         camera = new THREE.PerspectiveCamera(3, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.set(-10, 0, 23);
+        camera.position.set(0, 0, 23);
         scene.add(camera);
     }
 
@@ -31,8 +31,9 @@ export const TDGlbBig = () => {
         controls.minDistance = 10;
         controls.maxDistance = 50;
         controls.enablePan = false;
+        controls.dampingFactor = 0.1;
         controls.autoRotate = true
-        controls.autoRotateSpeed = 1.0
+        controls.autoRotateSpeed = 2
         controls.addEventListener('change', render);
     }
 
@@ -110,6 +111,12 @@ export const TDGlbBig = () => {
     }
 
     return (
-        <div/>
+        <>
+            <span className='loader' style={{
+                zIndex: 2, position: 'fixed', width: '100%', height: '100%', top: 0, left: 0, background: '#f1f1f1',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+            }}/>
+            <div/>
+        </>
     )
 }
